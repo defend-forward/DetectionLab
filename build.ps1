@@ -268,6 +268,10 @@ function move_boxes {
     Write-Error "Windows 2016 box is missing from the Boxes directory. Qutting."
     break
   }
+  if (-Not (Test-Path "$DL_DIR\Boxes\windows_2016_svc_$PackerProvider.box")) {
+    Write-Error "Windows 2016 svc box is missing from the Boxes directory. Qutting."
+    break
+  }
   Write-Host "[move_boxes] Finished."
 }
 
@@ -382,6 +386,7 @@ preflight_checks
 if (!($VagrantOnly)) {
   packer_build_box -Box 'windows_2016'
   packer_build_box -Box 'windows_10'
+  packer_build_box -Box 'windows_2016_svc'
   # Move Packer Boxes
   move_boxes
 }
