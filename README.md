@@ -1,5 +1,6 @@
 # a fork of the Detection Lab
-This is a forked repository from DetectionLab. Some minor adjustments / downsizing are being applied for specific study. Objectives includes 1) lower RAM requirement: 8 GB and 2) emulate some enterprise features such as network isolation within the lab.
+This is a forked repository from the DetectionLab. Some minor adjustments / downsizing are being applied for specific study purposes. Objectives include 1) lower RAM requirement: 8 GB and 2) emulate some enterprise features such as network isolation within the lab.
+As of this writing on May 1st 2019, the target host OS is Windows only.
 
 ----------------------------------------
 Original descriptions start from here
@@ -56,8 +57,9 @@ There is a single build script that supports 3 different options:
 - `./build.sh <virtualbox|vmware_desktop> --packer-only` - This option only builds the Packer boxes and will not use Vagrant to start up the lab.
 
 Windows users will want to use the following script:
+- `powershell -NoProfile -ExecutionPolicy Unrestricted` - start PowerShell
 - `./build.ps1 -ProviderName <virtualbox|vmware_desktop>` - Builds the entire lab from scratch. Takes 3-5 hours depending on hardware resources and bandwidth
-- `./build.ps1 -ProviderName <virtualbox|vmware_desktop> -VagrantOnly` - Downloads pre-built Packer boxes from https://detectionlab.network and builds the lab from those boxes. This option is recommended if you have more bandwidth than time or are having trouble building boxes.
+- `./build.ps1 -ProviderName <virtualbox|vmware_desktop> -VagrantOnly` - Downloads pre-built Packer boxes from https://detectionlab.network and builds the lab from those boxes. This option is recommended if you have more bandwidth than time or are having trouble building boxes. Note) With this option, the evaluation license can be "expired" depends on the date of use and pre-built work.
 
 ---
 
