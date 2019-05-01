@@ -1,7 +1,9 @@
-# Detection Lab
-DetectionLab is tested weekly on Saturdays via a scheduled CircleCI workflow to ensure that builds are passing.
+# a fork of the Detection Lab
+This is a forked repository from DetectionLab. Some minor adjustments / downsizing are being applied for specific study. Objectives includes 1) lower RAM requirement: 8 GB and 2) emulate some enterprise features such as network isolation within the lab.
 
-CircleCI: [![CircleCI](https://circleci.com/gh/clong/DetectionLab/tree/master.svg?style=svg)](https://circleci.com/gh/clong/DetectionLab/tree/master)
+----------------------------------------
+Original descriptions start from here
+----------------------------------------
 
 #### Donate to the project:
 
