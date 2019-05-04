@@ -52,7 +52,8 @@ Param(
 )
 
 $DL_DIR = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
-$LAB_HOSTS = ('dc', 'win10', 'svc')
+$LAB_HOSTS = ('dc', 'win10')
+#$LAB_HOSTS = ('dc', 'win10', 'svc')
 #$LAB_HOSTS = ('logger', 'dc', 'wef', 'win10')
 
 function install_checker {
@@ -199,7 +200,7 @@ function preflight_checks {
   Write-Host '[preflight_checks] Checking for vagrant instances..'
   $CurrentDir = Get-Location
   Set-Location "$DL_DIR\Vagrant"
-  if (($(vagrant status) | Select-String -Pattern "not[ _]created").Count -ne 4) {
+  if (($(vagrant status) | Select-String -Pattern "not[ _]created").Count -ne 6) {
     Write-Error 'You appear to have already created at least one Vagrant instance. This script does not support already created instances. Please either destroy the existing instances or follow the build steps in the README to continue.'
     break
   }
@@ -259,7 +260,7 @@ function packer_build_box {
 
 function move_boxes {
   Write-Host "[move_boxes] Running.."
-  Move-Item -Path $DL_DIR\Packer\*.box -Destination $DL_DIR\Boxes
+  Move-Item -Path $DL_DIR\Packer\*.box -Destination $DL_DIR\Boxes -Force
   if (-Not (Test-Path "$DL_DIR\Boxes\windows_10_$PackerProvider.box")) {
     Write-Error "Windows 10 box is missing from the Boxes directory. Qutting."
     break
@@ -268,6 +269,11 @@ function move_boxes {
     Write-Error "Windows 2016 box is missing from the Boxes directory. Qutting."
     break
   }
+  $CurrentDir = Get-Location
+  Set-Location $DL_DIR
+  &vagrant.exe @('box', 'add', 'detectionlab-VAGRANTSLASH-win10', '--provider', "$ProviderName", "$DL_DIR\Boxes\windows_10_$PackerProvider.box") 2>&1 | Out-File -FilePath ".\vagrant_box_add_$VagrantHost.log"
+  &vagrant.exe @('box', 'add', 'detectionlab-VAGRANTSLASH-win2016', '--provider', "$ProviderName", "$DL_DIR\Boxes\windows_2016_$PackerProvider.box") 2>&1 | Out-File -FilePath ".\vagrant_box_add_$VagrantHost.log"
+  Set-Location $CurrentDir
   Write-Host "[move_boxes] Finished."
 }
 
@@ -279,7 +285,7 @@ function vagrant_up_host {
   Write-Host "Attempting to bring up the $VagrantHost host using Vagrant"
   $CurrentDir = Get-Location
   Set-Location "$DL_DIR\Vagrant"
-  set VAGRANT_LOG=info
+  Set-Variable VAGRANT_LOG=info
   &vagrant.exe @('up', $VagrantHost, '--provider', "$ProviderName") 2>&1 | Out-File -FilePath ".\vagrant_up_$VagrantHost.log"
   Set-Location $CurrentDir
   Write-Host "[vagrant_up_host] Finished for $VagrantHost. Got exit code: $LASTEXITCODE"
@@ -380,8 +386,18 @@ preflight_checks
 
 # Build Packer Boxes
 if (!($VagrantOnly)) {
-  packer_build_box -Box 'windows_2016'
-  packer_build_box -Box 'windows_10'
+  if (-Not (Test-Path "$DL_DIR\Boxes\windows_2016_$PackerProvider.box")) {
+    Write-Error "packer box image for Windows 2016 is not found in the \Boxes directory. Starting packer_build_box."
+    packer_build_box -Box 'windows_2016'
+  }
+
+  # due to license activation issues, Win10 may need to be (re)built from ISO each time.
+  # packer cache works by default, so will not download ISO image as far as the cache available
+  if (-Not (Test-Path "$DL_DIR\Boxes\windows_10_$PackerProvider.box")) {
+    Write-Error "packer box image for Windows 10 is not found in the \Boxes directory. Starting packer_build_box."
+    packer_build_box -Box 'windows_10'
+  }
+
   # Move Packer Boxes
   move_boxes
 }
